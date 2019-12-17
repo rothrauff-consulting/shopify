@@ -1,0 +1,44 @@
+{
+    "name": "rothrauff-consulting/shopify",
+    "description": "A PHP wrapper for the Shopify API.",
+    "keywords": [
+        "rothrauff-consulting",
+        "shopify"
+    ],
+    "homepage": "https://github.com/rothrauff-consulting/shopify",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Matthew Myers",
+            "email": "mmyers@rothrauffconsulting.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "RothrauffConsulting\\Shopify\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RothrauffConsulting\\Shopify\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
