@@ -32,7 +32,7 @@ class Shopify
         $url = "https://{$this->app_api_key}:{$this->app_password}@{$this->shop_url}/admin/api/{$this->api_version}/{$endpoint}.json?";
         if(isset($params))
             foreach($params as $key => $value)
-                $url .= $key.'='.urlencode($value).'&';
+                $url .= $key.'='.$value.'&';
         return substr($url, 0, -1);
     }
 

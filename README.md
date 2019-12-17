@@ -35,23 +35,26 @@ Examples:
 
 ``` php
 $shopify->get('products');
-$shopify->get('products', ['fields' => 'id, title']);
+$shopify->get('products', ['fields' => 'id,title']);
 
 $shopify->post('products', [
-    //new product
+    'product' => [
+        //new product
+    ]
 ]);
 
 $shopify->put('products/{id}', [
-    //update product
+    'product' => [
+        //update product
+    ]
 ]);
 
 $shopify->delete('products/{id}');
 ```
 
-Some delete request require parameters, e.g., themes:
+Some delete requests require parameters, e.g., themes:
 
 ``` php
-
 $shopify->delete('themes/{theme_id}/assets', ['asset[key]' =>  'asset_key']);
 ```
 
