@@ -11,7 +11,7 @@ class Shopify
     protected $app_password;
     protected $api_version;
 
-    private $supported_versions = ['2019-10'];
+    private $supported_versions = ['2019-10', '2020-01'];
 
     public function __construct($shop_url, $app_api_key, $app_password, $api_version = null)
     {
