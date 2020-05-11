@@ -5,7 +5,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/rothrauff-consulting/shopify.svg?style=flat-square)](https://scrutinizer-ci.com/g/rothrauff-consulting/shopify)
 [![Total Downloads](https://img.shields.io/packagist/dt/rothrauff-consulting/shopify.svg?style=flat-square)](https://packagist.org/packages/rothrauff-consulting/shopify)
 
-Currently supports version 2019-10 of the api, and will support all released versions.
+Currently supports version 2019-10, 2020-01, and 2020-04 of the REST Admin API, and will support all released versions.
 
 ## Installation
 
@@ -56,6 +56,13 @@ Some delete requests require parameters, e.g., themes:
 
 ``` php
 $shopify->delete('themes/{theme_id}/assets', ['asset[key]' =>  'asset_key']);
+```
+
+There is a retry mechanism that allows you to set how many retries, and how long to wait before retrying. Set these environment variables: 
+
+```
+SHOPIFY_RETRY_COUNT=
+SHOPIFY_TIMEOUT_SECONDS=
 ```
 
 ### Testing

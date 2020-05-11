@@ -10,8 +10,10 @@ class Shopify
     protected $app_api_key;
     protected $app_password;
     protected $api_version;
+    protected $retry_count;
+    protected $max_retries;
 
-    private $supported_versions = ['2019-10', '2020-01'];
+    private $supported_versions = ['2019-10', '2020-01', '2020-04'];
 
     public function __construct($shop_url, $app_api_key, $app_password, $api_version = null)
     {
@@ -19,12 +21,14 @@ class Shopify
         $this->app_api_key = $app_api_key;
         $this->app_password = $app_password;
         $this->api_version = $api_version;
+        $this->retry_count = 0;
+        $this->max_retries = getenv('SHOPIFY_RETRY_COUNT') ? getenv('SHOPIFY_RETRY_COUNT') : 0;
 
         if(!isset($this->api_version))
             $this->api_version = $this->supported_versions[0];
 
         if(!in_array($this->api_version, $this->supported_versions))
-            throw new ConfigurationException('Unsupported Shopify API version');
+            throw new ConfigurationException('Unsupported Shopify API version.');
     }
 
     private function buildURL($endpoint, $params = null)
@@ -38,20 +42,32 @@ class Shopify
 
     public function get($endpoint, Array $params = null)
     {
+        if(isset($params) && array_key_exists('limit', $params))
+            $limit = $params['limit'];
+
         if(!isset($params))
             $params = ['limit' => 250];
         elseif(!array_key_exists('limit', $params))
             $params['limit'] = 250;
+        elseif($params['limit'] > 250)
+            $params['limit'] = 250;
+
 
         $results = [];
-        
         do
         {
             $continue = false;
-            $response = Request::get($this->buildURL($endpoint, $params));
-
+            $response = $this->execute('get', $this->buildURL($endpoint, $params));
+            
             if(isset($response['body']))
-                $results = array_merge_recursive($results, $response['body']);
+                if(is_array($response['body']))
+                    $results = array_merge_recursive($results, $response['body']);
+                else
+                    return $response['body'];
+
+            if(isset($limit))
+                if(count($results) >= $limit)
+                    return array_splice($results, 0, $limit);
 
             if($params['limit'] == 250 && array_key_exists('link', $response['headers']))
             {
@@ -76,18 +92,48 @@ class Shopify
     {
         if(count($data) == 0)
             throw new ApiException('Cannot post an empty array');
-        return Request::post($this->buildURL($endpoint), $data)['body'];
+        return $this->execute('post', $this->buildURL($endpoint), $data)['body'];
     }
 
     public function put($endpoint, Array $data)
     {
         if(count($data) == 0)
             throw new ApiException('Cannot put an empty array');
-        return Request::put($this->buildURL($endpoint), $data)['body'];
+        return $this->execute('put', $this->buildURL($endpoint), $data)['body'];
     }
 
     public function delete($endpoint, Array $params = null)
     {
-        Request::delete($this->buildURL($endpoint, $params));
+        $this->execute('delete', $this->buildURL($endpoint, $params));
+    }
+
+    private function execute($type, $url, $data = null)
+    {
+        try
+        {
+            switch($type)
+            {
+                case 'get':
+                    return Request::get($url);
+                case 'post':
+                    return Request::post($url, $data);
+                case 'put':
+                    return Request::put($url, $data);
+                case 'delete':
+                    return Request::delete($url);
+            }
+        }
+        catch(\Exception $e)
+        {
+            if($this->retry_count < $this->max_retries)
+            {
+                $this->retry_count++;
+                if(getenv('SHOPIFY_TIMEOUT_SECONDS'))
+                    usleep(getenv('SHOPIFY_TIMEOUT_SECONDS') * 1000000);
+                return $this->execute($type, $url, $data);
+            }
+            else
+                throw $e;
+        }
     }
 }

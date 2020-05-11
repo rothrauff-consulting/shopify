@@ -13,7 +13,6 @@ class Request
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_HTTPHEADER => [
                 'Accept: */*',
@@ -82,10 +81,7 @@ class Request
 
         $response = json_decode($response, true);
         if(isset($response) && array_key_exists('errors', $response))
-            if(is_array($response['errors']))
-                throw new ApiException($response['errors'][array_keys($response['errors'])[0]]);
-            else
-                throw new ApiException($response['errors']);
+            throw new ApiException(json_encode($response['errors']));
 
         return [
             'headers' => $headers,
